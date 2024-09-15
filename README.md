@@ -24,3 +24,6 @@ This project is a **Streamlit web application** that allows users to upload a Li
 ```bash
 git clone https://github.com/thakurdishanttt/linkedin_pdf_to_html.git
 cd linkedin_pdf_to_html
+
+
+## local host address - http://localhost:8501/
