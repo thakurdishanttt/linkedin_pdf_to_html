@@ -3,14 +3,20 @@ from pdf2image import convert_from_path
 import pytesseract
 import openai
 import os
+import tempfile
+from dotenv import load_dotenv
 
-import pytesseract
+# Load environment variables from the .env file
+load_dotenv()
 
 # Set the path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-# Set your OpenAI API key securely
-openai.api_key = "sk-svcacct-RBat5Y6n4uTDNL03C7y-s8OK0bPWegb8KgrhrspA_bWh4fRY73mDJU-ZFK9T3BlbkFJbZQ8stps9eneBF-7Utao1uI_qXJjcBBkxqFhPyjrYOktx88twVQazSVf7PwA" # Better to set it as an environment variable  
+
+openai.api_key = os.getenv("OPENAI_API_KEY")  
+
+
+
 
 # Function to extract text from the uploaded PDF file using OCR
 def extract_text_from_pdf(pdf_path):
@@ -51,7 +57,6 @@ def process_text_with_openai(text):
 
 
 # Function to generate HTML resume from structured data
-# Function to generate HTML resume from structured data
 def generate_html_resume(structured_data):
     html_content = """
     <html>
@@ -73,17 +78,6 @@ def generate_html_resume(structured_data):
     return html_content
 
 
-
-# Function to save the HTML resume to a local file
-def save_html_to_file(html_content, file_name="resume.html"):
-    try:
-        with open(file_name, "w") as f:
-            f.write(html_content)
-        st.success(f"Resume saved locally as {file_name}")
-    except Exception as e:
-        st.error(f"Error saving HTML resume to file: {e}")
-
-# Main function to run the Streamlit app
 # Main function to run the Streamlit app
 def main():
     st.title("LinkedIn PDF to HTML Resume Converter")
@@ -93,13 +87,13 @@ def main():
 
     if pdf_file:
         try:
-            # Save the uploaded PDF locally
-            pdf_path = r"C:\Users\thaku\OneDrive - Graphic Era University\Desktop\python\Freelancing\Thakur Dishant __CV.pdf"  # Use a temporary file for uploading
-            with open(pdf_path, "wb") as f:
-                f.write(pdf_file.read())
+            # Save the uploaded PDF temporarily in memory
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
+                tmp_file.write(pdf_file.read())
+                tmp_file_path = tmp_file.name  # Get the temporary file path
 
             # Extract text from the PDF using OCR
-            text = extract_text_from_pdf(pdf_path)
+            text = extract_text_from_pdf(tmp_file_path)
 
             if text:
                 st.write("### Extracted Text from PDF:")
@@ -124,8 +118,6 @@ def main():
                         mime="text/html"
                     )
 
-                    # Save the HTML resume locally
-                    save_html_to_file(html_resume, file_name="local_resume.html")
                 else:
                     st.error("Failed to generate structured data from OpenAI.")
             else:
